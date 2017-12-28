@@ -271,9 +271,9 @@ void scrypt_1024_1_1_256_sp_generic(const char *input, char *output, char *scrat
 		step(stepNr++, reinterpret_cast<char*>(&X[0]), reinterpret_cast<char*>(V));
 	}
 	for (i = 0; i < 1024; i++) {
-		std::cout << std::hex << (X[16] & 1023) << std::endl;
+		// std::cout << std::hex << (X[16] & 1023) << std::endl;
 		j = 32 * (X[16] & 1023);
-		std::cout << std::hex << V[j] << std::endl;
+		// std::cout << std::hex << V[j] << std::endl;
 		for (k = 0; k < 32; k++)
 			X[k] ^= V[j + k];
 		step(stepNr, reinterpret_cast<char*>(&X[0]), reinterpret_cast<char*>(V));
