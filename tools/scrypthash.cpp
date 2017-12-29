@@ -53,10 +53,15 @@ std::vector<uint8_t> merkleHash(std::vector<uint8_t>::const_iterator begin, std:
 
 int main(int argc, char *argv[])
 {
-	// std::ostringstream std_input;
-	// std_input << std::cin.rdbuf();
-	std::string indata;// = std_input.str();
-	indata = std::string(80, 'X');
+    std::ifstream fin("input.data", std::ios::binary);
+    // std::cout << "Error: " << strerror(errno);
+    std::ostringstream ostrm;
+    
+    ostrm << fin.rdbuf();
+
+	std::string indata = ostrm.str();
+    
+    std::cout << "Got string: " << indata << std::endl;
 
 	char out[32];
 	char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
