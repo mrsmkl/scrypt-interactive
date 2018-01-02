@@ -62,10 +62,15 @@ function stringToBytes(str) {
     return "0x" + lst.toString("hex")
 }
 
+async function checkScrypt(contract, test) {
+    var result = await contract.methods.scrypt(test).call(send_opt)
+    console.log("Testing call", result)
+}
+
 async function doDeploy() {
     var send_opt = {gas:4700000, from:config.base}
 //    console.log(send_opt, file_id)
-    var init_hash = "0xaaa81417bc9a75a6623f9da64bf9ce8496be62d2d6d2d3aa179b46d2a93cc085"
+    var init_hash = "0xe187420bdf88777950d9e671389a80d5546d134e5eb25b885baef9cabe78b37a"
     var code_address = "QmcCieydTJPMANAyqH92LTYcobvzkiq9YPZs82yhU81WKm"
     var contract = await new web3.eth.Contract(abi).deploy({data: code, arguments:[config.tasks, config.fs, code_address, init_hash]}).send(send_opt)
     config.scrypt = contract.options.address
@@ -76,8 +81,9 @@ async function doDeploy() {
         console.log("Input data", ev.returnValues)
     })
     // await contract.methods.submitData(stringToBytes("heihei\n")).send(send_opt)
-    console.log("Bytes", stringToBytes("heihei\n"))
-    var tx = await contract.methods.submitData(stringToBytes("heihei\n")).send(send_opt)
+    var test = stringToBytes("heihei\n")
+    console.log("Bytes", test)
+    var tx = await contract.methods.submitData(test).send(send_opt)
     console.log(tx)
     contract.events.GotFiles(function (err,ev) {
         if (err) return console.log(err)
@@ -88,6 +94,7 @@ async function doDeploy() {
     contract.events.Consuming(function (err,ev) {
         if (err) return console.log(err)
         console.log("Consuming", ev.returnValues)
+        checkScrypt(contract, test)
     })
     // process.exit(0)
 }
