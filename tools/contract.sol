@@ -29,6 +29,8 @@ contract Scrypt {
 
    event GotFiles(bytes32[] files);
    event Consuming(bytes32[] arr);
+   
+   event InputData(bytes32[] data);
 
    uint nonce;
    TrueBit truebit;
@@ -55,11 +57,12 @@ contract Scrypt {
       for (uint i = 0; i <= data.length/32; i++) {
          uint a;
          for (uint j = 0; j < 32; j++) {
-            a += uint(data[i*32+j]);
             a = a*256;
+            if (i*32+j < data.length) a += uint(data[i*32+j]);
          }
          input[i] = bytes32(a);
       }
+      InputData(input);
       bytes32 input_file = filesystem.createFileWithContents("input.data", num, input, data.length);
       string_to_file[data] = input_file;
       bytes32 bundle = filesystem.makeBundle(num);
@@ -68,7 +71,7 @@ contract Scrypt {
       filesystem.addToBundle(bundle, filesystem.createFileWithContents("output.data", num+1000000000, empty, 0));
       filesystem.finalizeBundleIPFS(bundle, code, init);
       
-      uint task = truebit.addWithParameters(filesystem.getInitHash(bundle), 1, 1, idToString(bundle), 20, 25, 8, 20, 10);
+      uint task = truebit.addWithParameters(filesystem.getInitHash(bundle), 1, 1, idToString(bundle), 20, 20, 8, 20, 10);
       truebit.requireFile(task, hashName("output.data"), 0);
       task_to_string[task] = data;
    }

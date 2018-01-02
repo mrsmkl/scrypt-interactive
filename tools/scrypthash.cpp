@@ -89,4 +89,10 @@ int main(int argc, char *argv[])
 	});
 
 	std::cout << "Scrypt output: " << toHex(out) << std::endl;
+    std::ofstream fout("output.data", std::ios::binary);
+    
+    fout << out;
+    
+    fout.close();
+    
 }

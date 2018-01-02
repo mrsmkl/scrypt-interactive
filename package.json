@@ -9,13 +9,14 @@
   "author": "chriseth",
   "license": "MIT",
   "dependencies": {
-    "web3": "^1.0.0-beta.18"
+    "ipfs-api": "^17.2.6",
+    "web3": "^1.0.0-beta.27"
   },
   "devDependencies": {
     "semistandard": "^8.0.0",
     "tape": "^4.5.1",
     "tape-spawn": "^1.4.2",
-    "solc": "^0.4.16", 
-    "colors": "^1.1.2" 
+    "solc": "^0.4.16",
+    "colors": "^1.1.2"
   }
 }
