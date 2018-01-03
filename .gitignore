@@ -1,2 +1,4 @@
-node_modules
-tools/compiled
+tools/compiled/
+build/
+node_modules/
+tmp/
