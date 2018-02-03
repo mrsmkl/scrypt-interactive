@@ -146,12 +146,13 @@ describe('Claimant Client Integration Tests', function () {
       })
     }
      
-    it('test if it got accepted', async () => {
+    it('test if the next verification game started', async () => {
       await timeout(5000)
       await miner.mineBlocks(4)
       // const tx = bridge.api.claimManager.checkClaimSuccessful(claimID)
       const result = await getAllEvents(bridge.api.claimManager, 'VerificationGameStarted')
-      console.log(result)
+      result.length
+          .should.be.gt(1)
     })
 
   })
