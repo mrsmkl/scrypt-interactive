@@ -22,7 +22,7 @@ describe('Claimant Client Integration Tests', function () {
   // set max timeout to 120 seconds
   this.timeout(120000)
 
-  let bridge, claimant, challenger, claimID
+  let bridge, claimant, challenger, challenger2, claimID
   let claimID1, claimID2
   let sessionId = null
   let stopSubmitting, submit
@@ -35,6 +35,7 @@ describe('Claimant Client Integration Tests', function () {
 
     claimant = web3.eth.accounts[1]
     challenger = web3.eth.accounts[2]
+    challenger2 = web3.eth.accounts[3]
   })
 
   after(async () => {
@@ -48,6 +49,7 @@ describe('Claimant Client Integration Tests', function () {
     it('should let claimant make a deposit', async () => {
       await bridge.api.makeDeposit({ from: claimant, value: 1 })
       await bridge.api.makeDeposit({ from: challenger, value: 1 })
+      await bridge.api.makeDeposit({ from: challenger2, value: 1 })
 
       let deposit = await bridge.api.getDeposit(claimant)
       deposit.should.be.bignumber.gte(1)
@@ -107,6 +109,7 @@ describe('Claimant Client Integration Tests', function () {
 
       await bridge.api.challengeClaim(claimID, { from: challenger })
 
+
       await bridge.api.claimManager.runNextVerificationGame(claimID, { from: challenger })
 
       sessionId = (await bridge.api.claimManager.getSession.call(claimID, challenger)).toNumber()
@@ -115,6 +118,9 @@ describe('Claimant Client Integration Tests', function () {
       let medStep = 1025
       await bridge.api.query(sessionId, medStep, { from: challenger })
       await miner.mineBlocks(4)
+      
+      // extra challenge
+      await bridge.api.challengeClaim(claimID, { from: challenger2 })
     })
 
     for (let i = 0; i < 11; i++) {
@@ -139,6 +145,14 @@ describe('Claimant Client Integration Tests', function () {
         await miner.mineBlocks(4)
       })
     }
+     
+    it('test if it got accepted', async () => {
+      await timeout(5000)
+      await miner.mineBlocks(4)
+      // const tx = bridge.api.claimManager.checkClaimSuccessful(claimID)
+      const result = await getAllEvents(bridge.api.claimManager, 'VerificationGameStarted')
+      console.log(result)
+    })
 
   })
 })
