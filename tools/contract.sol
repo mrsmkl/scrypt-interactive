@@ -50,7 +50,7 @@ contract Scrypt {
       init = init_hash;        // the canonical hash
    }
 
-   function submitData(bytes data) public {
+   function submitData(bytes data) public returns (bytes32) {
       uint num = nonce;
       nonce++;
       bytes32[] memory input = new bytes32[](data.length/32+1);
@@ -74,6 +74,8 @@ contract Scrypt {
       uint task = truebit.addWithParameters(filesystem.getInitHash(bundle), 1, 1, idToString(bundle), 20, 20, 8, 20, 10);
       truebit.requireFile(task, hashName("output.data"), 0);
       task_to_string[task] = data;
+      
+      return filesystem.getRoot(input_file);
    }
 
    uint remember_task;

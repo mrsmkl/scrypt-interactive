@@ -44,8 +44,8 @@ async function createFile(fname, buf) {
 async function outputFile(id) {
     var lst = await filesystem.methods.getData(id).call(send_opt)
     console.log("File data for", id, "is", lst)
-    var dta = await filesystem.methods.debug_forwardData(id, config.coindrop).call(send_opt)
-    console.log("DEBUG: ", dta)
+    // var dta = await filesystem.methods.debug_forwardData(id, config.coindrop).call(send_opt)
+    // console.log("DEBUG: ", dta)
 }
 
 /*
@@ -67,11 +67,14 @@ async function checkScrypt(contract, test) {
     console.log("Testing call", result)
 }
 
+var input_string = process.argv[2] || "heihei\n"
+
 async function doDeploy() {
     var send_opt = {gas:4700000, from:config.base}
 //    console.log(send_opt, file_id)
-    var init_hash = "0xe187420bdf88777950d9e671389a80d5546d134e5eb25b885baef9cabe78b37a"
-    var code_address = "QmcCieydTJPMANAyqH92LTYcobvzkiq9YPZs82yhU81WKm"
+    console.log("Calculating hash for", input_string)
+    var init_hash = "0xa051e7927403672cd381a4a4fd84bba357c1751df3e91e1545d39d4e7a6c6a1d"
+    var code_address = "Qmcs9HsvFK1VAWAZLbqE31jmTdi6KrRv4vqcLK6UXDLF9s"
     var contract = await new web3.eth.Contract(abi).deploy({data: code, arguments:[config.tasks, config.fs, code_address, init_hash]}).send(send_opt)
     config.scrypt = contract.options.address
     console.log(JSON.stringify(config))
@@ -81,8 +84,10 @@ async function doDeploy() {
         console.log("Input data", ev.returnValues)
     })
     // await contract.methods.submitData(stringToBytes("heihei\n")).send(send_opt)
-    var test = stringToBytes("heihei\n")
+    var test = stringToBytes(input_string)
     console.log("Bytes", test)
+    var file_hash = await contract.methods.submitData(test).call(send_opt)
+    console.log(file_hash)
     var tx = await contract.methods.submitData(test).send(send_opt)
     console.log(tx)
     contract.events.GotFiles(function (err,ev) {

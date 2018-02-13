@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
 
 	std::string indata = ostrm.str();
     
+    indata.resize(80);
+    
     std::cout << "Got string: " << indata << std::endl;
 
 	char out[32];
@@ -91,7 +93,7 @@ int main(int argc, char *argv[])
 	std::cout << "Scrypt output: " << toHex(out) << std::endl;
     std::ofstream fout("output.data", std::ios::binary);
     
-    fout << out;
+    for (int i= 0; i < 32; i++) fout << out[i];
     
     fout.close();
     
