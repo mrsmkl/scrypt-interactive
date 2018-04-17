@@ -69,12 +69,14 @@ async function checkScrypt(contract, test) {
 
 var input_string = process.argv[2] || "heihei\n"
 
+var info = JSON.parse(fs.readFileSync("info.json"))
+
 async function doDeploy() {
     var send_opt = {gas:4700000, from:config.base}
 //    console.log(send_opt, file_id)
     console.log("Calculating hash for", input_string)
-    var init_hash = "0xa051e7927403672cd381a4a4fd84bba357c1751df3e91e1545d39d4e7a6c6a1d"
-    var code_address = "Qmcs9HsvFK1VAWAZLbqE31jmTdi6KrRv4vqcLK6UXDLF9s"
+    var init_hash = info.codehash // "0xa051e7927403672cd381a4a4fd84bba357c1751df3e91e1545d39d4e7a6c6a1d"
+    var code_address = info.ipfshash // "Qmcs9HsvFK1VAWAZLbqE31jmTdi6KrRv4vqcLK6UXDLF9s"
     var contract = await new web3.eth.Contract(abi).deploy({data: code, arguments:[config.tasks, config.fs, code_address, init_hash]}).send(send_opt)
     config.scrypt = contract.options.address
     console.log(JSON.stringify(config))
