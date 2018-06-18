@@ -3,26 +3,28 @@ pragma solidity ^0.4.16;
 
 interface Filesystem {
 
-   function createFileWithContents(string name, uint nonce, bytes32[] arr, uint sz) public returns (bytes32);
-   function getSize(bytes32 id) public view returns (uint);
-   function getRoot(bytes32 id) public view returns (bytes32);
-   function forwardData(bytes32 id, address a) public;
+   function createFileWithContents(string name, uint nonce, bytes32[] arr, uint sz) external returns (bytes32);
+   function getSize(bytes32 id) external view returns (uint);
+   function getRoot(bytes32 id) external view returns (bytes32);
+   function getData(bytes32 id) external view returns (bytes32[]);
+   function forwardData(bytes32 id, address a) external;
    
    // function makeSimpleBundle(uint num, address code, bytes32 code_init, bytes32 file_id) public returns (bytes32);
    
-   function makeBundle(uint num) public view returns (bytes32);
-   function addToBundle(bytes32 id, bytes32 file_id) public returns (bytes32);
-   function finalizeBundleIPFS(bytes32 id, string file, bytes32 init) public;
-   function getInitHash(bytes32 bid) public view returns (bytes32);
+   function makeBundle(uint num) external view returns (bytes32);
+   function addToBundle(bytes32 id, bytes32 file_id) external returns (bytes32);
+   function finalizeBundleIPFS(bytes32 id, string file, bytes32 init) external;
+   function getInitHash(bytes32 bid) external view returns (bytes32);
    
-   function debug_finalizeBundleIPFS(bytes32 id, string file, bytes32 init) public returns (bytes32, bytes32, bytes32, bytes32, bytes32);
+   function debug_finalizeBundleIPFS(bytes32 id, string file, bytes32 init) external returns (bytes32, bytes32, bytes32, bytes32, bytes32);
    
 }
 
 interface TrueBit {
-   function add(bytes32 init, /* CodeType */ uint8 ct, /* Storage */ uint8 cs, string stor) public returns (uint);
-   function addWithParameters(bytes32 init, /* CodeType */ uint8 ct, /* Storage */ uint8 cs, string stor, uint8 stack, uint8 mem, uint8 globals, uint8 table, uint8 call) public returns (uint);
-   function requireFile(uint id, bytes32 hash, /* Storage */ uint8 st) public;
+   function add(bytes32 init, /* CodeType */ uint8 ct, /* Storage */ uint8 cs, string stor) external returns (uint);
+   function addWithParameters(bytes32 init, /* CodeType */ uint8 ct, /* Storage */ uint8 cs, string stor, uint8 stack, uint8 mem, uint8 globals, uint8 table, uint8 call) external returns (uint);
+   function requireFile(uint id, bytes32 hash, /* Storage */ uint8 st) external;
+   function commit(uint id) external;
 }
 
 contract Scrypt {
@@ -43,7 +45,7 @@ contract Scrypt {
    mapping (uint => bytes) task_to_string;
    mapping (bytes => bytes32) result;
 
-   function Scrypt(address tb, address fs, string code_address, bytes32 init_hash) public {
+   constructor(address tb, address fs, string code_address, bytes32 init_hash) public {
       truebit = TrueBit(tb);
       filesystem = Filesystem(fs);
       code = code_address;     // address for wasm file in IPFS
@@ -62,7 +64,7 @@ contract Scrypt {
          }
          input[i] = bytes32(a);
       }
-      InputData(input);
+      emit InputData(input);
       bytes32 input_file = filesystem.createFileWithContents("input.data", num, input, data.length);
       string_to_file[data] = input_file;
       bytes32 bundle = filesystem.makeBundle(num);
@@ -73,25 +75,31 @@ contract Scrypt {
       
       uint task = truebit.addWithParameters(filesystem.getInitHash(bundle), 1, 1, idToString(bundle), 20, 20, 8, 20, 10);
       truebit.requireFile(task, hashName("output.data"), 0);
+      truebit.commit(task);
       task_to_string[task] = data;
       
-      return filesystem.getRoot(input_file);
+      return filesystem.getInitHash(bundle);
    }
 
    uint remember_task;
 
+   /*
    function consume(bytes32, bytes32[] arr) public {
-      Consuming(arr);
+      emit Consuming(arr);
       require(Filesystem(msg.sender) == filesystem);
       result[task_to_string[remember_task]] = arr[0];
-   }
+   }*/
 
    // this is the callback name
    function solved(uint id, bytes32[] files) public {
       // could check the task id
+      require(TrueBit(msg.sender) == truebit);
       remember_task = id;
-      filesystem.forwardData(files[0], this);
-      GotFiles(files);
+      emit GotFiles(files);
+      bytes32[] memory arr = filesystem.getData(files[0]);
+      emit Consuming(arr);
+      result[task_to_string[remember_task]] = arr[0];
+      // filesystem.forwardData(files[0], this);
    }
 
    // need some way to get next state, perhaps shoud give all files as args

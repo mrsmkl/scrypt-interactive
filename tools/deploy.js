@@ -12,9 +12,17 @@ var config = JSON.parse(fs.readFileSync("/home/sami/webasm-solidity/node/config.
 
 var host = config.host
 
+var w3provider
+
+if (host == "ipc") {
+    var net = require('net')
+    w3provider = new web3.providers.IpcProvider(config.ipc, net)
+}
+else w3provider = new web3.providers.WebsocketProvider('ws://' + host + ':8546')
+// else w3provider = new web3.providers.HttpProvider('http://' + host + ':8545')
+
 var send_opt = {gas:4700000, from:config.base}
 
-var w3provider = new web3.providers.WebsocketProvider('ws://' + host + ':8546')
 web3.setProvider(w3provider)
 
 var filesystem = new web3.eth.Contract(JSON.parse(fs.readFileSync("/home/sami/webasm-solidity/contracts/compiled/Filesystem.abi")), config.fs)
